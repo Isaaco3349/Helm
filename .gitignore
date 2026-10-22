@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.circle/
+*recovery*
+*recovery_file*
+out/
+cache/
+contracts/out/
+contracts/cache/

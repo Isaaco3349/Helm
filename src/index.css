@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Helm design tokens ─────────────────────────────────────────────── */
+:root {
+  --bg: #8a8276;
+  --surface: #f4f0e8;
+  --accent: #6b6358;
+  --text: #1a1f26;
+  --text-muted: #3f3a33;
+  --border: #5c564c;
+  --header-bg: #262c34;
+  --header-fg: #f4f0e8;
+  --header-muted: #d8d2c8;
+  --semantic-success: #1b5e40;
+  --semantic-error: #8a2424;
+  --font-sans: 'DM Sans', system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Space Grotesk', Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Typography helpers */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ConnectKit button overrides */
+.ck-button {
+  background-color: var(--accent) !important;
+  color: var(--header-fg) !important;
+}
+
+
