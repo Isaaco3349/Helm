@@ -27,8 +27,8 @@ export default function App() {
         <SideNav active={tab} onChange={setTab} />
 
         {/* Main content */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
-          <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+        <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: 'clamp(0.75rem, 3vw, 1.25rem)' }}>
+          <div style={{ maxWidth: '960px', margin: '0 auto', minWidth: 0 }}>
             <TabContent
               tab={tab}
               vaultAddr={vaultAddr}

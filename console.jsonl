@@ -402,3 +402,52 @@
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792652382640}
 {"level":"log","message":"error {\"isTrusted\":true}","timestamp":1792652384874}
 {"level":"log","message":"An error occurred: {\"isTrusted\":true}","timestamp":1792652384874}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792652513669}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792652513772}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792653144220}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792653144221}
+{"level":"log","message":"open {\"isTrusted\":true}","timestamp":1792653146139}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792653146216}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792653146216}
+{"level":"log","message":"open {\"isTrusted\":true}","timestamp":1792653146752}
+{"level":"log","message":"error {\"isTrusted\":true}","timestamp":1792653147229}
+{"level":"log","message":"An error occurred: {\"isTrusted\":true}","timestamp":1792653147229}
+{"level":"log","message":"error {\"isTrusted\":true}","timestamp":1792653222356}
+{"level":"log","message":"An error occurred: {\"isTrusted\":true}","timestamp":1792653222356}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792684939751}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792684939752}
+{"level":"log","message":"open {\"isTrusted\":true}","timestamp":1792684940156}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792685240753}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792685240755}
+{"level":"log","message":"open {\"isTrusted\":true}","timestamp":1792685241255}
+{"level":"log","message":"error {\"isTrusted\":true}","timestamp":1792685400751}
+{"level":"log","message":"An error occurred: {\"isTrusted\":true}","timestamp":1792685400751}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792686385742}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792686385745}
+{"level":"log","message":"open {\"isTrusted\":true}","timestamp":1792686386609}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792686686742}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792686686743}
+{"level":"log","message":"restart sse, about to listen","timestamp":1792686686742}
+{"level":"log","message":"listen https://wallet.binance.com/tonbridge/bridge/events?client_id=d70470cc65044f5ce3fadf7658fd2bf95cee6ecc839d7dfacaa8637173d91153&user_info=","timestamp":1792686686743}
+{"level":"log","message":"error {\"isTrusted\":true}","timestamp":1792686691772}
+{"level":"log","message":"An error occurred: {\"isTrusted\":true}","timestamp":1792686691772}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792687399024}
+{"level":"debug","message":"[vite] invalidate /src/components/SideNav.tsx: Could not Fast Refresh (export removed)","timestamp":1792687428078}
+{"level":"debug","message":"[vite] hot updated: /src/components/SideNav.tsx","timestamp":1792687428078}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687428079}
+{"level":"debug","message":"[vite] hot updated: /src/components/TopBar.tsx","timestamp":1792687431580}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687431581}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1792687432336}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792687432336}
+{"level":"debug","message":"[vite] hot updated: /src/components/DemoPanel.tsx","timestamp":1792687436623}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687436623}
+{"level":"debug","message":"[vite] hot updated: /src/components/DemoPanel.tsx","timestamp":1792687436842}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687436842}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792687441518}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687441518}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792687441529}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687441529}
+{"level":"debug","message":"[vite] hot updated: /src/components/DemoPanel.tsx","timestamp":1792687453137}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687453137}
+{"level":"debug","message":"[vite] hot updated: /src/components/DemoPanel.tsx","timestamp":1792687453543}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792687453543}

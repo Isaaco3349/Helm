@@ -74,21 +74,19 @@ export function DemoPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
   return (
     <div className="flex flex-col gap-4">
       <Card title="Demo addresses">
-        <div className="grid md:grid-cols-3 gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div>
-            <div className="text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Sponsor (Owner)</div>
-            <div className="font-mono text-xs tabular-nums" style={{ color: 'var(--text)' }}>{ownerAddr || 'Connect wallet'}</div>
+            <div style={{ fontSize: '11px', fontWeight: 500, marginBottom: '3px', color: 'var(--text-muted)' }}>Sponsor (Owner)</div>
+            <div style={{ fontFamily: 'monospace', fontSize: '12px', color: 'var(--text)', wordBreak: 'break-all' }}>
+              {ownerAddr || 'Connect wallet'}
+            </div>
           </div>
-          <div>
-            <Input label="Agent (Executor) address" placeholder="0x… agent wallet" value={agentAddr} onChange={e => setAgentAddr(e.target.value)} />
-          </div>
-          <div>
-            <Input label="Payee (Service) address" placeholder="0x… payee wallet" value={payeeAddr} onChange={e => setPayeeAddr(e.target.value)} />
-          </div>
+          <Input label="Agent (Executor) address" placeholder="0x… agent wallet" value={agentAddr} onChange={e => setAgentAddr(e.target.value)} />
+          <Input label="Payee (Service) address" placeholder="0x… payee wallet" value={payeeAddr} onChange={e => setPayeeAddr(e.target.value)} />
         </div>
         {vaultAddr && (
-          <div className="mt-3 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-            Vault: <a href={`${EXPLORER}/address/${vaultAddr}`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--text)' }}>{vaultAddr}</a>
+          <div style={{ marginTop: '10px', fontSize: '11px', fontFamily: 'monospace', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+            Vault: <a href={`${EXPLORER}/address/${vaultAddr}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'underline' }}>{vaultAddr}</a>
           </div>
         )}
       </Card>
@@ -115,9 +113,17 @@ export function DemoPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
       ))}
 
       <Card title="Contract addresses">
-        <div className="flex flex-col gap-2 text-xs font-mono">
-          <div><span style={{ color: 'var(--text-muted)' }}>Factory: </span>{FACTORY_ADDRESS ? <a href={`${EXPLORER}/address/${FACTORY_ADDRESS}`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--text)' }}>{FACTORY_ADDRESS}</a> : 'Not deployed'}</div>
-          <div><span style={{ color: 'var(--text-muted)' }}>Your vault: </span>{vaultAddr ? <a href={`${EXPLORER}/address/${vaultAddr}`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--text)' }}>{vaultAddr}</a> : '—'}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+          <div><span style={{ color: 'var(--text-muted)' }}>Factory: </span>
+            {FACTORY_ADDRESS
+              ? <a href={`${EXPLORER}/address/${FACTORY_ADDRESS}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'underline' }}>{FACTORY_ADDRESS}</a>
+              : 'Not deployed'}
+          </div>
+          <div><span style={{ color: 'var(--text-muted)' }}>Your vault: </span>
+            {vaultAddr
+              ? <a href={`${EXPLORER}/address/${vaultAddr}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'underline' }}>{vaultAddr}</a>
+              : '—'}
+          </div>
           <div><span style={{ color: 'var(--text-muted)' }}>USDC: </span>0x3600000000000000000000000000000000000000</div>
           <div><span style={{ color: 'var(--text-muted)' }}>Network: </span>Arc mainnet (Chain ID 5042)</div>
         </div>
