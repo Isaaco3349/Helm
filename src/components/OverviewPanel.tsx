@@ -1,15 +1,23 @@
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { erc20Abi } from 'viem'
 import { toast } from 'sonner'
+import { useEffect, useRef, useState } from 'react'
 import { useVaultBalance, useWalletUsdcBalance, useVaultPolicy, useUsdcAllowance } from '@/lib/useVault'
 import { FACTORY_ABI, FACTORY_ADDRESS } from '@/lib/helm-contracts'
 import { fmtUsdc, parseUsdcInput, parseWriteError } from '@/lib/format'
 import { getUsdc } from '@/onchain-facts'
 import { ARC_MAINNET_ID } from '@/config'
 import { Card, Stat, Btn, Input, TxState } from './Card'
-import { useState } from 'react'
 
 const CHAIN = ARC_MAINNET_ID
+
+const DEPOSIT_ABI = [
+  { type: 'function', name: 'deposit', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+] as const
+
+const WITHDRAW_ABI = [
+  { type: 'function', name: 'withdraw', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+] as const
 
 interface OverviewPanelProps {
   vaultAddr?: `0x${string}`
@@ -29,66 +37,94 @@ export function OverviewPanel({ vaultAddr, onVaultCreated }: OverviewPanelProps)
   // Create vault
   const { writeContract: createVault, data: cvHash, isPending: cvPending } = useWriteContract()
   const { isLoading: cvConfirming, isSuccess: cvSuccess } = useWaitForTransactionReceipt({ hash: cvHash })
-  if (cvSuccess) { onVaultCreated() }
+  const cvSuccessHandled = useRef(false)
+  useEffect(() => {
+    if (cvSuccess && !cvSuccessHandled.current) {
+      cvSuccessHandled.current = true
+      onVaultCreated()
+    }
+    if (!cvSuccess) cvSuccessHandled.current = false
+  }, [cvSuccess, onVaultCreated])
 
-  // Deposit flow: approve then deposit
+  // Deposit flow: approve → deposit
   const [depositAmt, setDepositAmt] = useState('')
+  // Keep a ref to the amount at approval time so the deposit step uses the same value
+  const pendingDepositRaw = useRef<bigint | null>(null)
   const { allowance, refetch: refetchAllowance } = useUsdcAllowance(address, vaultAddr)
   const { writeContract: approve, data: approveHash, isPending: approvePending } = useWriteContract()
   const { isLoading: approveConfirming, isSuccess: approveSuccess } = useWaitForTransactionReceipt({ hash: approveHash })
   const { writeContract: deposit, data: depositHash, isPending: depositPending } = useWriteContract()
   const { isLoading: depositConfirming, isSuccess: depositSuccess, isError: depositError, error: depositErr } = useWaitForTransactionReceipt({ hash: depositHash })
-  if (depositSuccess) { void refetchVaultBal(); void refetchAllowance(); setDepositAmt(''); toast.success('Deposited!') }
+  const approveSuccessHandled = useRef(false)
+  const depositSuccessHandled = useRef(false)
 
-  // Withdraw flow
-  const [withdrawAmt, setWithdrawAmt] = useState('')
-  const { writeContract: withdraw, data: withdrawHash, isPending: withdrawPending } = useWriteContract()
-  const { isLoading: withdrawConfirming, isSuccess: withdrawSuccess, isError: withdrawError, error: withdrawErr } = useWaitForTransactionReceipt({ hash: withdrawHash })
-  if (withdrawSuccess) { void refetchVaultBal(); setWithdrawAmt(''); toast.success('Withdrawn!') }
+  // After approval confirmed → fire the deposit (exactly once)
+  useEffect(() => {
+    if (approveSuccess && !approveSuccessHandled.current && pendingDepositRaw.current && vaultAddr) {
+      approveSuccessHandled.current = true
+      const raw = pendingDepositRaw.current
+      deposit({ address: vaultAddr, abi: DEPOSIT_ABI, functionName: 'deposit', args: [raw], chainId: CHAIN })
+    }
+    if (!approveSuccess) approveSuccessHandled.current = false
+  }, [approveSuccess, vaultAddr, deposit])
+
+  // After deposit confirmed → refresh balance + clear form (exactly once)
+  useEffect(() => {
+    if (depositSuccess && !depositSuccessHandled.current) {
+      depositSuccessHandled.current = true
+      pendingDepositRaw.current = null
+      void refetchVaultBal()
+      void refetchAllowance()
+      setDepositAmt('')
+      toast.success('Deposited!')
+    }
+    if (!depositSuccess) depositSuccessHandled.current = false
+  }, [depositSuccess, refetchVaultBal, refetchAllowance])
 
   function handleDeposit() {
     if (!vaultAddr || !usdcAddress || !address) return
     const raw = parseUsdcInput(depositAmt)
     if (!raw) return
     if ((allowance ?? 0n) < raw) {
+      pendingDepositRaw.current = raw
+      approveSuccessHandled.current = false
       approve({ address: usdcAddress, abi: erc20Abi, functionName: 'approve', args: [vaultAddr, raw], chainId: CHAIN })
     } else {
-      deposit({ address: vaultAddr, abi: [
-        { type: 'function', name: 'deposit', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' }
-      ] as const, functionName: 'deposit', args: [raw], chainId: CHAIN })
+      deposit({ address: vaultAddr, abi: DEPOSIT_ABI, functionName: 'deposit', args: [raw], chainId: CHAIN })
     }
   }
 
-  if (approveSuccess) {
-    const raw = parseUsdcInput(depositAmt)
-    if (raw && vaultAddr) {
-      deposit({ address: vaultAddr, abi: [
-        { type: 'function', name: 'deposit', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' }
-      ] as const, functionName: 'deposit', args: [raw], chainId: CHAIN })
+  // Withdraw flow
+  const [withdrawAmt, setWithdrawAmt] = useState('')
+  const { writeContract: withdraw, data: withdrawHash, isPending: withdrawPending } = useWriteContract()
+  const { isLoading: withdrawConfirming, isSuccess: withdrawSuccess, isError: withdrawError, error: withdrawErr } = useWaitForTransactionReceipt({ hash: withdrawHash })
+  const withdrawSuccessHandled = useRef(false)
+  useEffect(() => {
+    if (withdrawSuccess && !withdrawSuccessHandled.current) {
+      withdrawSuccessHandled.current = true
+      void refetchVaultBal()
+      setWithdrawAmt('')
+      toast.success('Withdrawn!')
     }
-  }
+    if (!withdrawSuccess) withdrawSuccessHandled.current = false
+  }, [withdrawSuccess, refetchVaultBal])
 
   function handleWithdraw() {
     if (!vaultAddr) return
     const raw = parseUsdcInput(withdrawAmt)
     if (!raw) return
-    withdraw({ address: vaultAddr, abi: [
-      { type: 'function', name: 'withdraw', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' }
-    ] as const, functionName: 'withdraw', args: [raw], chainId: CHAIN })
+    withdraw({ address: vaultAddr, abi: WITHDRAW_ABI, functionName: 'withdraw', args: [raw], chainId: CHAIN })
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-      {/* Not-deployed banner (non-blocking) */}
+      {/* Not-deployed banner */}
       {!FACTORY_ADDRESS && (
         <div style={{
-          padding: '10px 14px',
-          borderRadius: '8px',
-          background: 'rgba(138,36,36,0.09)',
-          border: '1px solid var(--semantic-error)',
-          color: 'var(--semantic-error)',
-          fontSize: '12px',
+          padding: '10px 14px', borderRadius: '8px',
+          background: 'rgba(138,36,36,0.09)', border: '1px solid var(--semantic-error)',
+          color: 'var(--semantic-error)', fontSize: '12px',
         }}>
           <strong>Contracts pending deployment.</strong> Set <code>VITE_HELM_FACTORY_ADDRESS</code> in .env after deploying.
         </div>
@@ -113,7 +149,7 @@ export function OverviewPanel({ vaultAddr, onVaultCreated }: OverviewPanelProps)
         </Card>
       )}
 
-      {/* Balances row */}
+      {/* Balances */}
       {address && isArc && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
           <Card><Stat label="Vault USDC" value={fmtUsdc(vaultBal)} sub="deposited" /></Card>
@@ -123,7 +159,7 @@ export function OverviewPanel({ vaultAddr, onVaultCreated }: OverviewPanelProps)
         </div>
       )}
 
-      {/* Policy row */}
+      {/* Policy summary */}
       {address && isArc && vaultAddr && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
           <Card><Stat label="Auto-approve cap" value={autoMax !== undefined ? fmtUsdc(autoMax) : '—'} sub="per tx" /></Card>
@@ -132,7 +168,7 @@ export function OverviewPanel({ vaultAddr, onVaultCreated }: OverviewPanelProps)
         </div>
       )}
 
-      {/* Create vault CTA */}
+      {/* Create vault */}
       {address && isArc && FACTORY_ADDRESS && !vaultAddr && (
         <Card title="Your Vault">
           <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '14px' }}>
