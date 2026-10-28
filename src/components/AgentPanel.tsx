@@ -96,7 +96,7 @@ function SubmitIntentForm({ vaultAddr }: { vaultAddr: `0x${string}` }) {
       address: vaultAddr,
       abi: VAULT_ABI,
       functionName: 'submitIntent',
-      args: [payee as `0x${string}`, refBytes, raw as unknown as number & bigint, deadline as unknown as number & bigint],
+      args: [payee as `0x${string}`, refBytes, raw, deadline],
       chainId: CHAIN,
     })
   }

@@ -43,7 +43,7 @@ export function PolicyPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
               onClick={() => {
                 const raw = parseUsdcInput(autoInput)
                 if (!raw) return
-                setAuto({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setAutoApproveMax', args: [raw as unknown as number & bigint], chainId: CHAIN })
+                setAuto({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setAutoApproveMax', args: [raw], chainId: CHAIN })
               }}
               loading={autoPending || autoConfirming}
             >
@@ -65,7 +65,7 @@ export function PolicyPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
               onClick={() => {
                 const raw = parseUsdcInput(limitInput)
                 if (raw === undefined) return
-                setLimit({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setDailySpendLimit', args: [raw as unknown as number & bigint], chainId: CHAIN })
+                setLimit({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setDailySpendLimit', args: [raw], chainId: CHAIN })
               }}
               loading={limitPending || limitConfirming}
             >

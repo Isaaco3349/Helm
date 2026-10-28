@@ -87,7 +87,7 @@ function CreateScheduleForm({ vaultAddr }: { vaultAddr: `0x${string}` }) {
     const labelBytes = ('0x' + Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')) as `0x${string}`
     writeContract({
       address: vaultAddr, abi: VAULT_ABI, functionName: 'createSchedule',
-      args: [payee as `0x${string}`, labelBytes, raw as unknown as number & bigint, intervalSecs as unknown as number & bigint, startAt as unknown as number & bigint, Number(runsRemaining) as unknown as number & bigint],
+      args: [payee as `0x${string}`, labelBytes, raw, intervalSecs, startAt, Number(runsRemaining)],
       chainId: CHAIN,
     })
   }
