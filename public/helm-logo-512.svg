@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="60" fill="#262c34"/>
+
+  <!-- Helm wheel -->
+  <!-- Outer ring -->
+  <circle cx="256" cy="224" r="112" fill="none" stroke="#f4f0e8" stroke-width="18"/>
+  <!-- Inner hub -->
+  <circle cx="256" cy="224" r="28" fill="#f4f0e8"/>
+  <!-- 8 spokes -->
+  <line x1="256" y1="196" x2="256" y2="126" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="256" y1="252" x2="256" y2="322" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="228" y1="224" x2="158" y2="224" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="284" y1="224" x2="354" y2="224" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="236" y1="204" x2="187" y2="155" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="276" y1="244" x2="325" y2="293" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="276" y1="204" x2="325" y2="155" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+  <line x1="236" y1="244" x2="187" y2="293" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Handle grips -->
+  <circle cx="256" cy="118" r="12" fill="#6b6358"/>
+  <circle cx="256" cy="330" r="12" fill="#6b6358"/>
+  <circle cx="148" cy="224" r="12" fill="#6b6358"/>
+  <circle cx="364" cy="224" r="12" fill="#6b6358"/>
+  <circle cx="178" cy="146" r="12" fill="#6b6358"/>
+  <circle cx="334" cy="302" r="12" fill="#6b6358"/>
+  <circle cx="334" cy="146" r="12" fill="#6b6358"/>
+  <circle cx="178" cy="302" r="12" fill="#6b6358"/>
+
+  <!-- Wordmark -->
+  <text x="256" y="408" font-family="Georgia, Cambria, 'Times New Roman', serif" font-size="68" font-weight="700" fill="#f4f0e8" text-anchor="middle" letter-spacing="8">HELM</text>
+
+  <!-- Tagline -->
+  <text x="256" y="444" font-family="system-ui, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#d8d2c8" text-anchor="middle" letter-spacing="1.5">AGENT PAYMENTS UNDER POLICY</text>
+</svg>
