@@ -6,6 +6,7 @@ import { fmtUsdc, parseUsdcInput, parseWriteError } from '@/lib/format'
 import { ARC_MAINNET_ID } from '@/config'
 import { Card, Btn, Input, TxState } from './Card'
 import { useState } from 'react'
+import { useTxEffect } from '@/lib/useTxEffect'
 
 const CHAIN = ARC_MAINNET_ID
 
@@ -17,31 +18,32 @@ export function PolicyPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
 
   const { writeContract: setAuto, data: autoHash, isPending: autoPending } = useWriteContract()
   const { isLoading: autoConfirming, isSuccess: autoSuccess, isError: autoError, error: autoErr } = useWaitForTransactionReceipt({ hash: autoHash })
-  if (autoSuccess) toast.success('Auto-approve cap updated.')
+  useTxEffect(autoSuccess, () => toast.success('Auto-approve cap updated.'))
 
   const { writeContract: setLimit, data: limitHash, isPending: limitPending } = useWriteContract()
   const { isLoading: limitConfirming, isSuccess: limitSuccess, isError: limitError, error: limitErr } = useWaitForTransactionReceipt({ hash: limitHash })
-  if (limitSuccess) toast.success('Daily limit updated.')
+  useTxEffect(limitSuccess, () => toast.success('Daily limit updated.'))
 
   if (!address || !vaultAddr) {
-    return <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Connect wallet and create a vault first.</p>
+    return <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Connect wallet and create a vault first.</p>
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid md:grid-cols-2 gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
         {/* Auto-approve cap */}
         <Card title="Instant-lane cap">
-          <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-            Payments at or below this amount are paid <em>immediately</em> when the payee is on the allowlist.
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            Payments at or below this amount fire <em>immediately</em> when the payee is allowlisted.
             Current: <strong>{autoMax !== undefined ? fmtUsdc(autoMax) : '—'}</strong>
           </p>
-          <div className="flex flex-col gap-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <Input label="New cap (USDC)" type="number" min="0" step="0.01" placeholder="0.10" value={autoInput} onChange={e => setAutoInput(e.target.value)} />
             <Btn
               onClick={() => {
                 const raw = parseUsdcInput(autoInput)
-                setAuto({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setAutoApproveMax', args: [BigInt(raw) as unknown as number & bigint], chainId: CHAIN })
+                if (!raw) return
+                setAuto({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setAutoApproveMax', args: [raw as unknown as number & bigint], chainId: CHAIN })
               }}
               loading={autoPending || autoConfirming}
             >
@@ -53,16 +55,17 @@ export function PolicyPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
 
         {/* Daily spend limit */}
         <Card title="Daily spend limit">
-          <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-            Total USDC that can leave the vault in any rolling 24-hour window (instant + escrow + schedule lanes).
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            Total USDC that can leave the vault in a rolling 24-hour window across all lanes.
             Set to 0 for unlimited. Current: <strong>{dailyLimit !== undefined ? (dailyLimit === 0n ? 'Unlimited' : fmtUsdc(dailyLimit)) : '—'}</strong>
           </p>
-          <div className="flex flex-col gap-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <Input label="New limit (USDC, 0 = unlimited)" type="number" min="0" step="0.01" placeholder="5.00" value={limitInput} onChange={e => setLimitInput(e.target.value)} />
             <Btn
               onClick={() => {
                 const raw = parseUsdcInput(limitInput)
-                setLimit({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setDailySpendLimit', args: [BigInt(raw) as unknown as number & bigint], chainId: CHAIN })
+                if (raw === undefined) return
+                setLimit({ address: vaultAddr, abi: VAULT_ABI, functionName: 'setDailySpendLimit', args: [raw as unknown as number & bigint], chainId: CHAIN })
               }}
               loading={limitPending || limitConfirming}
             >
@@ -85,31 +88,31 @@ function AllowlistManager({ vaultAddr }: { vaultAddr: `0x${string}` }) {
 
   const { writeContract: addPayee, data: addHash, isPending: addPending } = useWriteContract()
   const { isLoading: addConfirming, isSuccess: addSuccess, isError: addError, error: addErr } = useWaitForTransactionReceipt({ hash: addHash })
-  if (addSuccess) { setPayeeInput(''); toast.success('Payee added to allowlist.') }
+  useTxEffect(addSuccess, () => { setPayeeInput(''); toast.success('Payee added to allowlist.') })
 
   const { writeContract: rmPayee, data: rmHash, isPending: rmPending } = useWriteContract()
   const { isLoading: rmConfirming, isSuccess: rmSuccess, isError: rmError, error: rmErr } = useWaitForTransactionReceipt({ hash: rmHash })
-  if (rmSuccess) { setRemoveInput(''); toast.success('Payee removed from allowlist.') }
+  useTxEffect(rmSuccess, () => { setRemoveInput(''); toast.success('Payee removed from allowlist.') })
 
   return (
     <Card title="Payee allowlist">
-      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-        Only allowlisted payees are eligible for the instant lane. All addresses can receive escrow-lane payments.
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
+        Only allowlisted payees are eligible for the instant lane. Any address can receive escrow-lane payments.
       </p>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <Input label="Add payee address" placeholder="0x…" value={payeeInput} onChange={e => setPayeeInput(e.target.value)} />
-          <Btn onClick={() => addPayee({ address: vaultAddr, abi: VAULT_ABI, functionName: 'addPayee', args: [payeeInput as `0x${string}`], chainId: ARC_MAINNET_ID })} loading={addPending || addConfirming}>
+          <Btn onClick={() => addPayee({ address: vaultAddr, abi: VAULT_ABI, functionName: 'addPayee', args: [payeeInput as `0x${string}`], chainId: CHAIN })} loading={addPending || addConfirming}>
             Add payee
           </Btn>
-          <TxState hash={addHash} isPending={addPending} isConfirming={addConfirming} isSuccess={addSuccess} isError={addError} errorMsg={parseWriteError(addErr)} chainId={ARC_MAINNET_ID} />
+          <TxState hash={addHash} isPending={addPending} isConfirming={addConfirming} isSuccess={addSuccess} isError={addError} errorMsg={parseWriteError(addErr)} chainId={CHAIN} />
         </div>
-        <div className="flex flex-col gap-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <Input label="Remove payee address" placeholder="0x…" value={removeInput} onChange={e => setRemoveInput(e.target.value)} />
-          <Btn variant="ghost" onClick={() => rmPayee({ address: vaultAddr, abi: VAULT_ABI, functionName: 'removePayee', args: [removeInput as `0x${string}`], chainId: ARC_MAINNET_ID })} loading={rmPending || rmConfirming}>
+          <Btn variant="ghost" onClick={() => rmPayee({ address: vaultAddr, abi: VAULT_ABI, functionName: 'removePayee', args: [removeInput as `0x${string}`], chainId: CHAIN })} loading={rmPending || rmConfirming}>
             Remove payee
           </Btn>
-          <TxState hash={rmHash} isPending={rmPending} isConfirming={rmConfirming} isSuccess={rmSuccess} isError={rmError} errorMsg={parseWriteError(rmErr)} chainId={ARC_MAINNET_ID} />
+          <TxState hash={rmHash} isPending={rmPending} isConfirming={rmConfirming} isSuccess={rmSuccess} isError={rmError} errorMsg={parseWriteError(rmErr)} chainId={CHAIN} />
         </div>
       </div>
     </Card>

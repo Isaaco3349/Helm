@@ -9,10 +9,11 @@ import { ARC_MAINNET_ID } from '@/config'
 import { Card, Btn, Input, TxState } from './Card'
 import { useState } from 'react'
 import { useVaultPolicy } from '@/lib/useVault'
+import { useTxEffect } from '@/lib/useTxEffect'
 
 const CHAIN = ARC_MAINNET_ID
-const WEEKLY = 7 * 24 * 3600   // 604800
-const MONTHLY = 30 * 24 * 3600  // 2592000
+const WEEKLY = 7 * 24 * 3600
+const MONTHLY = 30 * 24 * 3600
 
 export function SchedulesPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
   const { address } = useAccount()
@@ -20,18 +21,18 @@ export function SchedulesPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
   const total = nextScheduleId ? Number(nextScheduleId) : 0
 
   if (!address || !vaultAddr) {
-    return <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Connect wallet and create a vault first.</p>
+    return <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Connect wallet and create a vault first.</p>
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <CreateScheduleForm vaultAddr={vaultAddr} />
       <ExecuteSchedulesForm vaultAddr={vaultAddr} total={total} />
       <Card title={`All schedules (${total} total)`}>
         {total === 0 ? (
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No schedules yet.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No schedules yet.</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {Array.from({ length: Math.min(total, 20) }, (_, i) => (
               <ScheduleRow key={i} scheduleId={BigInt(total - 1 - i)} vaultAddr={vaultAddr} />
             ))}
@@ -44,25 +45,18 @@ export function SchedulesPanel({ vaultAddr }: { vaultAddr?: `0x${string}` }) {
 
 function ScheduleRow({ scheduleId, vaultAddr }: { scheduleId: bigint; vaultAddr: `0x${string}` }) {
   const { data } = useReadContract({
-    address: vaultAddr,
-    abi: VAULT_ABI,
-    functionName: 'schedules',
-    args: [scheduleId],
-    chainId: CHAIN,
+    address: vaultAddr, abi: VAULT_ABI, functionName: 'schedules', args: [scheduleId], chainId: CHAIN,
   })
   if (!data) return null
   const [payee, , amount, intervalSeconds, nextRunAt, runsRemaining, active] = data as [string, `0x${string}`, bigint, number, bigint, number, boolean]
   return (
-    <div className="flex flex-wrap items-center gap-2 py-2.5 px-3 rounded text-xs" style={{ background: 'rgba(107,99,88,0.07)', border: '1px solid var(--border)' }}>
-      <span className="font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>#{String(scheduleId)}</span>
-      <span className="px-1.5 py-0.5 rounded-full text-xs font-medium" style={{
-        background: active ? 'rgba(27,94,64,0.15)' : 'rgba(107,99,88,0.15)',
-        color: active ? 'var(--semantic-success)' : 'var(--text-muted)',
-      }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', background: 'rgba(107,99,88,0.07)', border: '1px solid var(--border)' }}>
+      <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>#{String(scheduleId)}</span>
+      <span style={{ padding: '2px 6px', borderRadius: '999px', fontSize: '11px', fontWeight: 600, background: active ? 'rgba(27,94,64,0.15)' : 'rgba(107,99,88,0.15)', color: active ? 'var(--semantic-success)' : 'var(--text-muted)' }}>
         {active ? 'Active' : 'Inactive'}
       </span>
-      <span style={{ color: 'var(--text)' }}>Payee: <span className="font-mono">{fmtAddress(payee)}</span></span>
-      <span className="tabular-nums">{fmtUsdc(amount)}</span>
+      <span style={{ color: 'var(--text)' }}>Payee: <span style={{ fontFamily: 'monospace' }}>{fmtAddress(payee)}</span></span>
+      <span style={{ color: 'var(--text)' }}>{fmtUsdc(amount)}</span>
       <span style={{ color: 'var(--text-muted)' }}>{fmtInterval(intervalSeconds)}</span>
       <span style={{ color: 'var(--text-muted)' }}>Next: {fmtTs(nextRunAt)}</span>
       <span style={{ color: 'var(--text-muted)' }}>Runs left: {runsRemaining === 0 ? 'Unlimited' : runsRemaining}</span>
@@ -80,7 +74,7 @@ function CreateScheduleForm({ vaultAddr }: { vaultAddr: `0x${string}` }) {
 
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
-  if (isSuccess) { setPayee(''); setAmount(''); setLabel(''); toast.success('Schedule created!') }
+  useTxEffect(isSuccess, () => { setPayee(''); setAmount(''); setLabel(''); toast.success('Schedule created!') })
 
   function submit() {
     const raw = parseUsdcInput(amount)
@@ -92,38 +86,24 @@ function CreateScheduleForm({ vaultAddr }: { vaultAddr: `0x${string}` }) {
     arr.set(enc)
     const labelBytes = ('0x' + Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')) as `0x${string}`
     writeContract({
-      address: vaultAddr,
-      abi: VAULT_ABI,
-      functionName: 'createSchedule',
-      args: [
-        payee as `0x${string}`,
-        labelBytes,
-        BigInt(raw) as unknown as number & bigint,
-        intervalSecs as unknown as number & bigint,
-        BigInt(startAt) as unknown as number & bigint,
-        Number(runsRemaining) as unknown as number & bigint,
-      ],
+      address: vaultAddr, abi: VAULT_ABI, functionName: 'createSchedule',
+      args: [payee as `0x${string}`, labelBytes, raw as unknown as number & bigint, intervalSecs as unknown as number & bigint, startAt as unknown as number & bigint, Number(runsRemaining) as unknown as number & bigint],
       chainId: CHAIN,
     })
   }
 
   return (
     <Card title="Create schedule">
-      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '14px' }}>
         Monthly intervals use a 30-day approximation (2,592,000 seconds).
       </p>
-      <div className="grid md:grid-cols-2 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
         <Input label="Payee address" placeholder="0x…" value={payee} onChange={e => setPayee(e.target.value)} />
-        <Input label="Amount per run (USDC)" type="number" min="0" step="0.01" placeholder="100.00" value={amount} onChange={e => setAmount(e.target.value)} />
+        <Input label="Amount per run (USDC)" type="number" min="0" step="0.01" placeholder="1.00" value={amount} onChange={e => setAmount(e.target.value)} />
         <Input label="Label / reference" placeholder="monthly-retainer" value={label} onChange={e => setLabel(e.target.value)} />
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Interval</label>
-          <select
-            value={interval}
-            onChange={e => setInterval(e.target.value as 'weekly' | 'monthly')}
-            className="px-3 py-2 rounded text-sm"
-            style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid var(--border)', color: 'var(--text)' }}
-          >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>Interval</label>
+          <select value={interval} onChange={e => setInterval(e.target.value as 'weekly' | 'monthly')} style={{ padding: '8px 10px', borderRadius: '6px', fontSize: '13px', background: 'rgba(255,255,255,0.7)', border: '1px solid var(--border)', color: 'var(--text)' }}>
             <option value="weekly">Weekly (7 days)</option>
             <option value="monthly">Monthly (30 days)</option>
           </select>
@@ -131,7 +111,7 @@ function CreateScheduleForm({ vaultAddr }: { vaultAddr: `0x${string}` }) {
         <Input label="Start (days from now)" type="number" min="0" value={startOffset} onChange={e => setStartOffset(e.target.value)} />
         <Input label="Max runs (0 = unlimited)" type="number" min="0" value={runsRemaining} onChange={e => setRunsRemaining(e.target.value)} />
       </div>
-      <div className="mt-3">
+      <div style={{ marginTop: '12px' }}>
         <Btn onClick={submit} loading={isPending || isConfirming}>Create schedule</Btn>
       </div>
       <TxState hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} isError={isError} errorMsg={parseWriteError(error)} chainId={CHAIN} />
@@ -144,27 +124,24 @@ function ExecuteSchedulesForm({ vaultAddr, total }: { vaultAddr: `0x${string}`; 
 
   const { writeContract, data: hash, isPending, isError, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
-  if (isSuccess) toast.success('Due schedules executed!')
+  useTxEffect(isSuccess, () => toast.success('Due schedules executed!'))
 
   function execute() {
     const ids = idsInput.split(',').map(s => s.trim()).filter(Boolean).map(s => BigInt(s))
-    if (ids.length === 0) {
-      // Execute all (up to MAX_BATCH=50)
-      const all = Array.from({ length: Math.min(total, 50) }, (_, i) => BigInt(i))
-      writeContract({ address: vaultAddr, abi: VAULT_ABI, functionName: 'executeDueSchedules', args: [all], chainId: CHAIN })
-    } else {
-      writeContract({ address: vaultAddr, abi: VAULT_ABI, functionName: 'executeDueSchedules', args: [ids], chainId: CHAIN })
-    }
+    const toRun = ids.length === 0 ? Array.from({ length: Math.min(total, 50) }, (_, i) => BigInt(i)) : ids
+    writeContract({ address: vaultAddr, abi: VAULT_ABI, functionName: 'executeDueSchedules', args: [toRun], chainId: CHAIN })
   }
 
   return (
     <Card title="Execute due schedules">
-      <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-        Any wallet can call this. Leave IDs blank to run all (up to 50). Schedules that are not yet due, inactive, or underfunded are silently skipped.
+      <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+        Any wallet can call this. Leave IDs blank to run all (up to 50). Schedules not yet due, inactive, or underfunded are silently skipped.
       </p>
-      <div className="flex gap-2 items-end flex-wrap">
-        <Input label="Schedule IDs (comma-separated, or blank for all)" placeholder="0,1,2" value={idsInput} onChange={e => setIdsInput(e.target.value)} className="flex-1 min-w-48" />
-        <Btn onClick={execute} loading={isPending || isConfirming} className="mb-0">Execute</Btn>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <Input label="Schedule IDs (comma-separated, or blank for all)" placeholder="0,1,2" value={idsInput} onChange={e => setIdsInput(e.target.value)} />
+        </div>
+        <Btn onClick={execute} loading={isPending || isConfirming}>Execute</Btn>
       </div>
       <TxState hash={hash} isPending={isPending} isConfirming={isConfirming} isSuccess={isSuccess} isError={isError} errorMsg={parseWriteError(error)} chainId={CHAIN} />
     </Card>
